@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<canvas id="canvas" width="1300" height="700"
+style="background-color:#002395">
+</canvas>
+
+<input type="text" id="textInput" size="40" onkeypress="keyFunction(event, this)">
+
+<script>
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
+var radius = canvas.height / 2;
+//ctx.translate(radius, radius);
+ctx.font = "30px Helvetica";
+radius = radius * 0.90
+var th = 0;
+var delta_th = Math.PI / 180 / 2 * 7/5;
+//var delta_th = 0;
+var bgcolor = '#000000';
+var theta = [];
+for (ii = 0; ii < 8; ii++) {
+    theta.push(2 * Math.PI * Math.random())    		  
+}
+//alert(theta);
+var period = [8, 18.52, 31.62, 64, 148.16, 374.97, 1000, 2660.43];
+// Ceres: 88, 86, 84 = 585654
+// Ceres: 116, 98, 80 = 746250
+// Chiron: 52, 49, 40 = 343128
+// Chiron: 77, 66, 60 = 4D423C
+// Chiron: 117, 110, 99 = 756E63
+var colors = ['#AAAAAA', '#DEB175', '#25356D', '#E3954F', '#C28151', '#FCC283', '#98DDE0', '#1786A5', '#370C09', '#746250', '#756E63', '#AEA098'];
+var sun = true;
+var erin = '#369064';
+var cx = canvas.width / 2;
+var cy = canvas.height / 2;
+var cc = 0.07;                // full Solar System
+//var cc = 1.4;                   // inner Solar System
+
+// Orrery
+var perihelion = [46, 107.48, 147.09, 206.62, 740.52, 1352.2, 2741.3, 4444.4, 4435.0, 446.6, 1266.2, 5723];   // x 10^6 km
+var aphelion = [69.82, 108.94, 152.10, 249.23, 816.62, 1514.5, 3003.6, 4545.7, 7304.3, 381.28, 2833.9, 14602];  // x 10^6 km
+var eccentricity = [0.205631, 0.006773, 0.016710, 0.093412, 0.048393, 0.054151*0 + 0.0539, 0.047168, 0.0085859*0 + 0.0113*1, 0.24881, 0.0789, 0.38316, 0.44068];
+var perilong = [77.456, 131.53, 102.95, 336.04, 14.753, 92.432, 170.96, 44.971, 224.07, 152.9, 339.58, 186.9301];   // degrees
+var Omega_deg = [48.331, 76.678, -11.260, 49.562, 100.492, 113.642, 73.999, 131.782, 110.301, 80.3293, 209.31, 35.9531];   // degrees
+var omega_deg = [29.124, 55.186, 102.947, 286.537, 275.066, 336.013, 96.998, 273.219, 113.777, 72.5220, 339.98, 150.977];   // degrees
+
+var inclination =  [7.0049, 3.3947, 0.00005, 1.8506, 1.3053, 2.4845*0 + 2.486, 0.76986, 1.7692, 17.142*1, 10.58, 6.9352, 44.0445];   // degrees
+var period = [87.969, 224.701, 365.256, 686.980, 4332.6, 10759.2, 30685, 60190, 90465, 1680.1, 18518, 203824];   // days
+//var peridate = [[1,21,2015], [4,18,2015],[1,4,2009], [4,21,2009], [3,17,2011], [7,26,2003], [5,22,1966], [7,8,1886], [9,4,1989]];
+//var peridate = [[1,21,2015], [4,18,2015],[1,4,2009], [4,21,2009], [3,17,2011], [7,26,2003], [5,22,1966], [11,13,2046], [9,4,1989]];
+//var peridate = [[1,21,2015], [4,18,2015],[1,4,2009], [4,21,2009], [3,17,2011], [7,26,2003], [5,22,1966], [11,13,2046], [1,13,1990]];
+//var peridate = [[1,21,2015], [4,18,2015],[1,4,2009], [4,21,2009], [3,17,2011], [7,26,2003], [9,9,1966], [11,13,2046], [1,13,1990]];
+//var peridate = [[1,21,2015], [4,18,2015],[1,4,2009], [4,21,2009], [3,17,2011], [7,11,2003], [9,9,1966], [11,13,2046], [1,13,1990]];
+//var peridate = [[1,21,2015], [4,18,2015],[1,4,2009], [4,21,2009], [3,13,2011], [7,11,2003], [9,9,1966], [11,13,2046], [1,13,1990]];
+//var peridate = [[1,21,2015], [4,18,2015],[1,4,2009], [6,1,2007], [3,13,2011], [7,11,2003], [9,9,1966], [11,13,2046], [1,13,1990]];
+//var peridate = [[1,21,2015], [10,6,2006],[1,4,2009], [6,1,2007], [3,13,2011], [7,11,2003], [9,9,1966], [11,13,2046], [1,13,1990]];
+//var peridate = [[5,22,2006], [4,18,2015],[1,4,2009], [6,1,2007], [3,13,2011], [7,11,2003], [9,9,1966], [11,13,2046], [1,13,1990]];
+var peridate = [[1,21,2015], [4,18,2015],[1,4,2009], [6,1,2007], [3,13,2011], [7,11,2003], [9,9,1966], [11,13,2046], [1,13,1990],[4,25,2018],[2,12,1996], [7,2,2256]];
+// http://www.auxmaillesgodefroy.com/planet_aphelion
+// https://in-the-sky.org/news.php?id=20150121_12_100   "Mercury at perihelion"
+// https://in-the-sky.org/news.php?id=20150418_12_100   "Venus at perihelion"
+// http://www.princeton.edu/~willman/planetary_systems/Sol/Neptune/  "Planet Neptune Data"
+
+var today = new Date();
+var when = JDN(today.getMonth() + 1, today.getDate(), today.getFullYear());
+var first_when = when;
+var trace = false;
+var logarithmic = false;
+var circles = true;           // show orbits?
+var number_of_planets = 12;
+var orrery = false;             // do planets move? does time move forward?
+var view_angle = 0;             // in radians?
+var vibe = false;
+var orbitcolor = 8;    // 5 = red, 3 = green, 8 = blue
+
+setInterval(onEachFrame, 10);
+//setInterval(onEachFramePrime, 10);
+
+function onEachFrame() {
+  ctx.beginPath();
+  ctx.fillStyle = bgcolor;
+  if (!trace) {
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+  }
+  //ctx.fill;
+  ctx.fillStyle = 'white';
+  //ctx.fillText("Hello World", 10, 50);
+  ctx.fillText("Harmony", 10, 50);
+  ctx.fillStyle = 'grey';
+  ctx.fillText(when - first_when, 10, 650);
+  //th = th + delta_th;
+  //ctx.fillText(th, 10, 90);
+  ctx.fill();
+  var txt = document.getElementById("textInput");
+  txt.value = "";
+  onEachFramePrime();
+}
+
+function onEachFramePrime() {
+  if (vibe) {
+    th = th + delta_th;
+    ctx.beginPath();
+    //ctx.strokeStyle = 'white';
+    if (orbitcolor == 5) {
+      red = 255;
+      green = Math.floor(128 - 127 * Math.cos(th));
+      blue = Math.floor(128 - 127 * Math.cos(th));
+    } else if (orbitcolor == 8) {
+      blue = 255;
+      green = Math.floor(128 - 127 * Math.cos(th));
+      red = Math.floor(128 - 127 * Math.cos(th));
+    } else if (orbitcolor == 3) {
+      green = 255;
+      red = Math.floor(128 - 127 * Math.cos(th));
+      blue = Math.floor(128 - 127 * Math.cos(th));
+    }
+    //ctx.strokeStyle = 'rgb(red, green, blue)';
+    var value = "rgb(" + red + ", " + green + ", " + blue + ")";
+    var value = "rgb(".concat(red.toString()).concat(", ").concat(green.toString()).concat(", ").concat(blue.toString()).concat(")");
+    //ctx.strokeStyle = 'rgb(' + red + ', ' + green + ', ' + blue + ')';
+    //ctx.strokeText(value, 50, 50);
+    ctx.strokeStyle = value;
+    //ctx.strokeText("something", 50, 50);
+    //ctx.strokeStyle = 'rgb(255, 255, 255)';
+  } else {
+;ctx.strokeStyle = 'white';
+    if (orbitcolor == 8) {
+      ctx.strokeStyle = 'blue';
+    } else if (orbitcolor == 5) {
+      ctx.strokeStyle = 'red';
+    } else if (orbitcolor == 3) {
+      ctx.strokeStyle = 'green';
+    }
+  }
+
+  for (ii = 0; ii < number_of_planets - 1; ii++) {
+    theta[ii] = theta[ii] + 0.04 * (1 / period[ii])*(2 * Math.PI)  
+  }
+
+  var r = 2;
+  //ctx.beginPath();
+  //ctx.fillStyle = colors[0];
+  //ctx.arc(cx + cc * Math.log(4) * Math.cos(theta[0]), cy - cc * Math.log(4) * Math.sin(theta[0]), r, 0, 2 * Math.PI);
+  //ctx.fill();
+  if (circles) {
+    for (jj = 0; jj <= number_of_planets - 1; jj++) {
+      displayOrbit(jj);
+    }
+  }
+
+  if (cc >= 1.4) {r = 4;}
+  displayPlanet(0, r, when);       // Mercury
+  displayPlanet(1, r, when);
+  displayPlanet(2, r, when);
+  displayPlanet(3, r, when);
+  //if (cc <= 0.07) {r = 4;}
+  r = 3;
+  displayPlanet(9, r, when);
+  //displayPlanet(10, r, when);
+  if (cc < 1.4) {r = 4;}
+  displayPlanet(4, r, when);       // Jupiter
+  displayPlanet(5, r, when);
+  displayPlanet(10, r, when);     // Chiron
+  displayPlanet(6, r, when);
+  displayPlanet(7, r, when);
+  if (logarithmic) {r = 2;}
+  displayPlanet(8, r, when);       // Pluto
+  displayPlanet(11, r, when);
+  if (!logarithmic) {r = 2;} else {r = 4;}
+  Sun(r);
+  if (orrery) {
+    when = when + 1;
+  }
+}
+
+
+
+function JDN(month, day, year) {
+  var a = Math.floor((14 - month) / 12);
+  var y = year + 4800 - a;
+  var m = month + 12*a - 3;
+  the_JDN = day + Math.floor((153*m + 2)/5) + 365*y + Math.floor(y/4) - Math.floor(y/100) + Math.floor(y/400) - 32045;
+  return the_JDN;
+}
+
+function heliocentric_XYZ(planet, when_JDN) {
+  var a = (perihelion[planet] + aphelion[planet]) / 2;
+  var peri_JDN = JDN(peridate[planet][0], peridate[planet][1], peridate[planet][2]);
+  //var today = new Date();
+  //var today_JDN = JDN(today.getMonth() + 1, today.getDate(), today.getFullYear());
+  today_JDN = when_JDN;
+  var diff_JDN = today_JDN - peri_JDN;
+  var M = diff_JDN / period[planet] * 2 * Math.PI;              // mean anomaly, in radians
+  // Use Kepler's Equation, M = E - e sin E, to calculate the eccentric anomaly, E.
+  // E would be between (M - e) and (M + e).
+  var epsilon = 0.0000001;
+  var guess_E = M;
+  var keplr = document.getElementById("kepler");
+  var keplr2 = document.getElementById("kepler2");
+  //if (planet == 2) {
+  //  keplr.innerHTML = guess_E.toString();
+  //  keplr2.innerHTML = "";
+  //}
+  var error = Math.abs((guess_E - (eccentricity[planet] * Math.sin(guess_E))) - M);
+  while (error >= epsilon) {
+    f_of_x = guess_E - eccentricity[planet]*Math.sin(guess_E) - M;
+    f_prime_of_x = 1 - eccentricity[planet]*Math.cos(guess_E);
+    Delta_x = -f_of_x / f_prime_of_x;
+    guess_E = guess_E + Delta_x;
+    //if (planet == 2) {
+    //  keplr.innerHTML = keplr.innerHTML + "\n " + guess_E.toString();
+    //}
+    error = Math.abs((guess_E - (eccentricity[planet] * Math.sin(guess_E))) - M);   
+    //if (planet == 2) {
+    //  keplr.innerHTML = keplr.innerHTML + "\n " + error.toString();
+    //  keplr2.innerHTML = keplr2.innerHTML + " ecc = " + eccentricity[planet] + " guess_E = " + guess_E + " sin(guess_E) = " + Math.sin(guess_E) + " ecc * sin(guess_E) = " + eccentricity[planet] * Math.sin(guess_E);
+    //}
+  }
+  var E = guess_E;
+  // nu = 2 arg(sqrt(1 - e) cos(E/2), sqrt(1 + e) sin(E/2))
+  //var nu = 2 * Math.atan2(Math.sqrt(1 - eccentricity[planet]) * Math.cos(E/2), Math.sqrt(1 + eccentricity[planet]) * Math.sin(E/2));
+  //var nu = 2 * Math.atan2(Math.sqrt(1 + eccentricity[planet]) * Math.sin(E/2), Math.sqrt(1 - eccentricity[planet]) * Math.cos(E/2));
+  var nu = Math.atan2(Math.sqrt(1 - Math.pow(eccentricity[planet],2))*Math.sin(E), Math.cos(E) - eccentricity[planet]);
+  // r(nu) = a(1 - e^2) / (1 + e cos nu)
+  sign = 1
+  var radius = a * (1 - Math.pow(eccentricity[planet],2)) / (1 + sign * eccentricity[planet] * Math.cos(nu));
+  //// z = r cos(nu) sin(theta)
+  var theta = inclination[planet] * Math.PI / 180;
+  //var z = radius * Math.cos(nu) * Math.sin(theta);
+  //// x = r cos(nu) cos(theta) cos(phi) - r sin(nu) sin(phi)
+  //// y = r cos(nu) cos(theta) sin(phi) + r sin(nu) cos(phi)
+  //var phi = perilong[planet] * Math.PI / 180;
+  //var x = radius * Math.cos(nu) * Math.cos(theta) * Math.cos(phi) - radius * Math.sin(nu) * Math.sin(phi);
+  //var y = radius * Math.cos(nu) * Math.cos(theta) * Math.sin(phi) + radius * Math.sin(nu) * Math.cos(phi);
+  
+  // Have radius, nu, & theta.
+  // Longitude of the ascending node given as Omega_deg.
+  // Argument of perihelion given as omega_deg.
+  var Omega = Omega_deg[planet] * Math.PI / 180;
+  var omega = omega_deg[planet] * Math.PI / 180;
+  //alert("Omega = " + Omega + ", omega = " + omega);
+  var asc_n = [Math.cos(Omega), Math.sin(Omega), 0];
+  var n = [0,0,1];
+  var z_n = Rodrigues_rotation(n, asc_n, theta);
+  //alert("z_n = " + z_n);
+  var x_n = asc_n;
+  var y_n = cross_product(z_n, x_n);
+  x_n = Rodrigues_rotation(x_n, z_n, omega);
+  y_n = Rodrigues_rotation(y_n, z_n, omega);
+  var summand_1 = scalar_product(radius * Math.cos(nu), x_n);  
+  var summand_2 = scalar_product(radius * Math.sin(nu), y_n);
+  var ret_val = vector_sum(summand_1, summand_2);
+  //alert("Planet " + planet + ", ret_val = " + ret_val);
+  ret_val = Rodrigues_rotation(ret_val, [1,0,0], view_angle);
+  return ret_val;
+  //return [x, y, z];
+}
+
+function displayOrbit(planet) {
+  var a = (perihelion[planet] + aphelion[planet]) / 2;
+  var nu = 0;
+  var sign = 1;
+  var radius = a * (1 - Math.pow(eccentricity[planet],2)) / (1 + sign * eccentricity[planet] * Math.cos(nu));
+  var theta = inclination[planet] * Math.PI / 180;
+  //var phi = perilong[planet] * Math.PI / 180;
+  //var z = radius * Math.cos(nu) * Math.sin(theta);
+  //var x = radius * Math.cos(nu) * Math.cos(theta) * Math.cos(phi) - radius * Math.sin(nu) * Math.sin(phi);
+  //var y = radius * Math.cos(nu) * Math.cos(theta) * Math.sin(phi) + radius * Math.sin(nu) * Math.cos(phi);
+  var Omega = Omega_deg[planet] * Math.PI / 180;
+  var omega = omega_deg[planet] * Math.PI / 180;
+  var asc_n = [Math.cos(Omega), Math.sin(Omega), 0];
+  var n = [0,0,1];
+  var z_n = Rodrigues_rotation(n, asc_n, theta);
+  var x_n = asc_n;
+  var y_n = cross_product(z_n, x_n);
+  x_n = Rodrigues_rotation(x_n, z_n, omega);
+  y_n = Rodrigues_rotation(y_n, z_n, omega);
+  var summand_1 = scalar_product(radius * Math.cos(nu), x_n);
+  var summand_2 = scalar_product(radius * Math.sin(nu), y_n);
+  var ret_val = vector_sum(summand_1, summand_2);  
+  ret_val = Rodrigues_rotation(ret_val, [1,0,0], view_angle);
+  var x = ret_val[0];
+  var y = ret_val[1];
+
+  if (logarithmic) {
+    radial = Math.sqrt(x * x + y * y);
+    log_radial = Math.log(radial);
+    angle = Math.atan2(y, x);
+    log_x = log_radial * Math.cos(angle);
+    log_y = log_radial * Math.sin(angle);
+    ctx.moveTo(cx + 400 * cc * log_x, cy - 400 * cc * log_y);
+  } else {
+    ctx.moveTo(cx + cc * x, cy - cc * y);
+  }
+  for (nu = Math.PI / 180; nu < 2 * Math.PI; nu = nu + Math.PI / 180) {
+    radius = a * (1 - Math.pow(eccentricity[planet],2)) / (1 + sign * eccentricity[planet] * Math.cos(nu));
+    //z = radius * Math.cos(nu) * Math.sin(theta);
+    //x = radius * Math.cos(nu) * Math.cos(theta) * Math.cos(phi) - radius * Math.sin(nu) * Math.sin(phi);
+    //y = radius * Math.cos(nu) * Math.cos(theta) * Math.sin(phi) + radius * Math.sin(nu) * Math.cos(phi);
+    var summand_1 = scalar_product(radius * Math.cos(nu), x_n);  
+    var summand_2 = scalar_product(radius * Math.sin(nu), y_n);
+    var ret_val = vector_sum(summand_1, summand_2);
+    ret_val = Rodrigues_rotation(ret_val, [1,0,0], view_angle);
+    var x = ret_val[0];
+    var y = ret_val[1];
+    if (logarithmic) {
+      radial = Math.sqrt(x * x + y * y);
+      log_radial = Math.log(radial);
+      angle = Math.atan2(y, x);
+      log_x = log_radial * Math.cos(angle);
+      log_y = log_radial * Math.sin(angle);
+      ctx.lineTo(cx + 400 * cc * log_x, cy - 400 * cc * log_y);    
+    } else {
+      // not logarithmic
+      ctx.lineTo(cx + cc * x, cy - cc * y);
+    }
+  }
+  ctx.stroke();
+}
+
+function Rodrigues_rotation(v, k, theta) {
+  var term_1 = scalar_product(Math.cos(theta), v);
+  var term_2 = scalar_product(Math.sin(theta), cross_product(k,v));
+  var term_3 = scalar_product((1 - Math.cos(theta))*(dot_product(k,v)), k);
+  return vector_sum(term_1, vector_sum(term_2, term_3));
+}
+
+function vector_sum(vec_1, vec_2) {
+  return [vec_1[0] + vec_2[0], vec_1[1] + vec_2[1], vec_1[2] + vec_2[2]];
+}
+
+function scalar_product(c, v) {
+  return [c * v[0], c * v[1], c * v[2]];
+}
+
+function dot_product(vec_1, vec_2) {
+  return (vec_1[0] * vec_2[0] + vec_1[1] * vec_2[1] + vec_1[2] * vec_2[2]);
+}
+
+function cross_product(vec_1, vec_2) {
+  var vec_3_of_0 = vec_1[1] * vec_2[2] - vec_1[2] * vec_2[1];
+  var vec_3_of_1 = vec_1[2] * vec_2[0] - vec_1[0] * vec_2[2];
+  var vec_3_of_2 = vec_1[0] * vec_2[1] - vec_1[1] * vec_2[0];
+  return [vec_3_of_0, vec_3_of_1, vec_3_of_2];
+}
+
+function Sun(r) {
+  ctx.beginPath();
+  ctx.fillStyle = 'white';
+  ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+  ctx.fill();
+}
+
+function displayPlanet(planet, r, when_JDN) {
+  //alert("planet " + planet);
+  ctx.beginPath();
+  ctx.fillStyle = colors[planet];
+  xyz = heliocentric_XYZ(planet, when_JDN);
+  if (logarithmic) {
+    radial = Math.sqrt(xyz[0] * xyz[0] + xyz[1] * xyz[1]);
+    log_radial = Math.log(radial);
+    angle = Math.atan2(xyz[1], xyz[0]);
+    log_x = log_radial * Math.cos(angle);
+    log_y = log_radial * Math.sin(angle);
+    ctx.arc(cx + 400 * cc * log_x, cy - 400 * cc * log_y, 2 * r, 0, 2 * Math.PI);
+  } else {
+    ctx.arc(cx + cc * xyz[0], cy - cc * xyz[1], r, 0, 2 * Math.PI);
+  }
+  //ctx.fillText(xyz, 5, 50 * planet);
+  ctx.fill();
+}
+
+
+function Venus(theta1, r) {
+  ctx.beginPath();
+  ctx.fillStyle = colors[1];
+  //ctx.fillText("Hello there! ".concat(theta1.toString()), 50, 100);
+  ctx.arc(cx + cc * Math.log(7) * Math.cos(theta1), cy - cc * Math.log(7) * Math.sin(theta1), r, 0, 2 * Math.PI);
+  ctx.fill();
+}
+
+function Earth(theta2, r) {
+  ctx.beginPath();
+  ctx.fillStyle = colors[2];
+  ctx.arc(cx + cc * Math.log(10) * Math.cos(theta2), cy - cc * Math.log(10) * Math.sin(theta2), r, 0, 2 * Math.PI);
+  ctx.fill();
+}
+
+function Mars(theta3, r) {
+  ctx.beginPath();
+  ctx.fillStyle = colors[3];
+  ctx.arc(cx + cc * Math.log(16) * Math.cos(theta3), cy - cc * Math.log(16) * Math.sin(theta3), r, 0, 2 * Math.PI);
+  ctx.fill();
+}
+
+function Jupiter(theta4, r) {
+  ctx.beginPath();
+  ctx.fillStyle = colors[4];
+  ctx.arc(cx + cc * Math.log(28) * Math.cos(theta4), cy - cc * Math.log(28) * Math.sin(theta4), r, 0, 2 * Math.PI);
+  ctx.fill();
+}
+
+function Saturn(theta5, r) {
+  ctx.beginPath();
+  ctx.fillStyle = colors[5];
+  ctx.arc(cx + cc * Math.log(52) * Math.cos(theta5), cy - cc * Math.log(52) * Math.sin(theta5), r, 0, 2 * Math.PI);
+  ctx.fill();
+}
+
+function Uranus(theta6, r) {
+  ctx.beginPath();
+  ctx.fillStyle = colors[6];
+  ctx.arc(cx + cc * Math.log(100) * Math.cos(theta6), cy - cc * Math.log(100) * Math.sin(theta6), r, 0, 2 * Math.PI);
+  ctx.fill();
+}
+
+function Neptune(theta7, r) {
+  ctx.beginPath();
+  ctx.fillStyle = colors[7];
+  ctx.arc(cx + cc * Math.log(192) * Math.cos(theta7), cy - cc * Math.log(192) * Math.sin(theta7), r, 0, 2 * Math.PI);
+  ctx.fill();
+}
+
+// Note: the outer planets move more smoothly than in the Quby version!
+// Also, the canvas takes up most of the screen now...
+// Make a print-out of this code before Calendula goes kaput.
+
+function keyFunction(event, the) {
+  var x = event.which || event.keyCode;
+  //alert(x);
+  if (x == 117) {
+    // (u)p
+    delta_th = delta_th * Math.pow(2, 1/12);    
+    //alert(delta_th);
+    // alert(delta_th * 60 * 60 / 2 / Math.PI);
+    alert("delta_th * 1800 / pi = ".concat((delta_th * 60 * 60 / 2 / Math.PI).toString()));
+  } else if (x == 100) {
+    // (d)own
+    delta_th = delta_th / Math.pow(2, 1/12);
+    //alert(delta_th);
+    //alert(delta_th * 60 * 60 / 2 / Math.PI);
+    alert("delta_th * 1800 / pi = ".concat((delta_th * 60 * 60 / 2 / Math.PI).toString()));
+  } else if (x == 101) {
+    //alert("Erin");
+    //canvas.style = "background-color:#369064";
+    // e
+    bgcolor = erin;
+  } else if (x == 105) {
+    // (i)ndigo
+    bgcolor = "#002395";
+  } else if (x == 98) {
+    // (b)lack
+    bgcolor = "#000000";
+  } else if (x == 103) {
+    // (g)olden flower yellow
+    //bgcolor = "#F5FD46";
+    bgcolor = "#FDC12D";
+  } else if (x == 116) {
+    // (t)race
+    trace = !trace;
+  } else if (x == 111) {
+    // (o)uter
+    if (cc <= 0.07) {
+      if (!logarithmic) {cc = 1.4;}
+    } else if (cc >= 1.4) {
+      cc = 0.07;
+    }
+  } else if (x == 108) {
+    // (l)ogarithmic
+    logarithmic = !logarithmic;
+    if (logarithmic) {cc = 0.07;}
+  } else if (x == 107) {
+    // k
+    cc = cc * Math.pow(2, 1/12);
+  } else if (x == 75) {
+    // K
+    cc = cc / Math.pow(2, 1/12);
+  } else if (x == 99) {
+    // (c)ircles
+    circles = !circles;
+  } else if (x == 102) {
+    // (f)orward
+    orrery = !orrery;
+  } else if (x == 85) {
+    // view angle (U)p
+    view_angle = view_angle - Math.PI / 24;
+  } else if (x == 68) {
+    // view angle (D)own
+    view_angle = view_angle + Math.PI / 24;
+  } else if (x == 86) {
+    // (V)ibe
+    vibe = !vibe;
+  } else if (x == 51) {
+    // 3
+    orbitcolor = 3;
+  } else if (x == 53) {
+    // 5
+    orbitcolor = 5
+  } else if (x == 56) {
+    // 8
+    orbitcolor = 8
+  }
+  
+  the.value = "";
+  //setInterval(onEachFrame, 10);
+  //setInterval(onEachFramePrime, 10);
+}
+</script>
+
+</body>
+</html>
