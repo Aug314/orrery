@@ -48,15 +48,6 @@ var omega_deg = [29.124, 55.186, 102.947, 286.537, 275.066, 336.013, 96.998, 273
 
 var inclination =  [7.0049, 3.3947, 0.00005, 1.8506, 1.3053, 2.4845*0 + 2.486, 0.76986, 1.7692, 17.142*1, 10.58, 6.9352, 44.0445];   // degrees
 var period = [87.969, 224.701, 365.256, 686.980, 4332.6, 10759.2, 30685, 60190, 90465, 1680.1, 18518, 203824];   // days
-//var peridate = [[1,21,2015], [4,18,2015],[1,4,2009], [4,21,2009], [3,17,2011], [7,26,2003], [5,22,1966], [7,8,1886], [9,4,1989]];
-//var peridate = [[1,21,2015], [4,18,2015],[1,4,2009], [4,21,2009], [3,17,2011], [7,26,2003], [5,22,1966], [11,13,2046], [9,4,1989]];
-//var peridate = [[1,21,2015], [4,18,2015],[1,4,2009], [4,21,2009], [3,17,2011], [7,26,2003], [5,22,1966], [11,13,2046], [1,13,1990]];
-//var peridate = [[1,21,2015], [4,18,2015],[1,4,2009], [4,21,2009], [3,17,2011], [7,26,2003], [9,9,1966], [11,13,2046], [1,13,1990]];
-//var peridate = [[1,21,2015], [4,18,2015],[1,4,2009], [4,21,2009], [3,17,2011], [7,11,2003], [9,9,1966], [11,13,2046], [1,13,1990]];
-//var peridate = [[1,21,2015], [4,18,2015],[1,4,2009], [4,21,2009], [3,13,2011], [7,11,2003], [9,9,1966], [11,13,2046], [1,13,1990]];
-//var peridate = [[1,21,2015], [4,18,2015],[1,4,2009], [6,1,2007], [3,13,2011], [7,11,2003], [9,9,1966], [11,13,2046], [1,13,1990]];
-//var peridate = [[1,21,2015], [10,6,2006],[1,4,2009], [6,1,2007], [3,13,2011], [7,11,2003], [9,9,1966], [11,13,2046], [1,13,1990]];
-//var peridate = [[5,22,2006], [4,18,2015],[1,4,2009], [6,1,2007], [3,13,2011], [7,11,2003], [9,9,1966], [11,13,2046], [1,13,1990]];
 var peridate = [[1,21,2015], [4,18,2015],[1,4,2009], [6,1,2007], [3,13,2011], [7,11,2003], [9,9,1966], [11,13,2046], [1,13,1990],[4,25,2018],[2,12,1996], [7,2,2256]];
 // https://in-the-sky.org/news.php?id=20150121_12_100   "Mercury at perihelion"
 // https://in-the-sky.org/news.php?id=20150418_12_100   "Venus at perihelion"
@@ -115,14 +106,9 @@ function onEachFramePrime() {
       red = Math.floor(128 - 127 * Math.cos(th));
       blue = Math.floor(128 - 127 * Math.cos(th));
     }
-    //ctx.strokeStyle = 'rgb(red, green, blue)';
     var value = "rgb(" + red + ", " + green + ", " + blue + ")";
     var value = "rgb(".concat(red.toString()).concat(", ").concat(green.toString()).concat(", ").concat(blue.toString()).concat(")");
-    //ctx.strokeStyle = 'rgb(' + red + ', ' + green + ', ' + blue + ')';
-    //ctx.strokeText(value, 50, 50);
     ctx.strokeStyle = value;
-    //ctx.strokeText("something", 50, 50);
-    //ctx.strokeStyle = 'rgb(255, 255, 255)';
   } else {
     //ctx.strokeStyle = 'white';
     if (orbitcolor == 8) {
@@ -154,10 +140,8 @@ function onEachFramePrime() {
   displayPlanet(1, r, when);
   displayPlanet(2, r, when);
   displayPlanet(3, r, when);
-  //if (cc <= 0.07) {r = 4;}
   r = 3;
   displayPlanet(9, r, when);
-  //displayPlanet(10, r, when);
   if (cc < 1.4) {r = 4;}
   displayPlanet(4, r, when);       // Jupiter
   displayPlanet(5, r, when);
@@ -187,8 +171,6 @@ function JDN(month, day, year) {
 function heliocentric_XYZ(planet, when_JDN) {
   var a = (perihelion[planet] + aphelion[planet]) / 2;
   var peri_JDN = JDN(peridate[planet][0], peridate[planet][1], peridate[planet][2]);
-  //var today = new Date();
-  //var today_JDN = JDN(today.getMonth() + 1, today.getDate(), today.getFullYear());
   today_JDN = when_JDN;
   var diff_JDN = today_JDN - peri_JDN;
   var M = diff_JDN / period[planet] * 2 * Math.PI;              // mean anomaly, in radians
@@ -219,20 +201,14 @@ function heliocentric_XYZ(planet, when_JDN) {
   }
   var E = guess_E;
   // nu = 2 arg(sqrt(1 - e) cos(E/2), sqrt(1 + e) sin(E/2))
-  //var nu = 2 * Math.atan2(Math.sqrt(1 - eccentricity[planet]) * Math.cos(E/2), Math.sqrt(1 + eccentricity[planet]) * Math.sin(E/2));
-  //var nu = 2 * Math.atan2(Math.sqrt(1 + eccentricity[planet]) * Math.sin(E/2), Math.sqrt(1 - eccentricity[planet]) * Math.cos(E/2));
   var nu = Math.atan2(Math.sqrt(1 - Math.pow(eccentricity[planet],2))*Math.sin(E), Math.cos(E) - eccentricity[planet]);
   // r(nu) = a(1 - e^2) / (1 + e cos nu)
   sign = 1
   var radius = a * (1 - Math.pow(eccentricity[planet],2)) / (1 + sign * eccentricity[planet] * Math.cos(nu));
   //// z = r cos(nu) sin(theta)
   var theta = inclination[planet] * Math.PI / 180;
-  //var z = radius * Math.cos(nu) * Math.sin(theta);
   //// x = r cos(nu) cos(theta) cos(phi) - r sin(nu) sin(phi)
   //// y = r cos(nu) cos(theta) sin(phi) + r sin(nu) cos(phi)
-  //var phi = perilong[planet] * Math.PI / 180;
-  //var x = radius * Math.cos(nu) * Math.cos(theta) * Math.cos(phi) - radius * Math.sin(nu) * Math.sin(phi);
-  //var y = radius * Math.cos(nu) * Math.cos(theta) * Math.sin(phi) + radius * Math.sin(nu) * Math.cos(phi);
   
   // Have radius, nu, & theta.
   // Longitude of the ascending node given as Omega_deg.
@@ -263,10 +239,6 @@ function displayOrbit(planet) {
   var sign = 1;
   var radius = a * (1 - Math.pow(eccentricity[planet],2)) / (1 + sign * eccentricity[planet] * Math.cos(nu));
   var theta = inclination[planet] * Math.PI / 180;
-  //var phi = perilong[planet] * Math.PI / 180;
-  //var z = radius * Math.cos(nu) * Math.sin(theta);
-  //var x = radius * Math.cos(nu) * Math.cos(theta) * Math.cos(phi) - radius * Math.sin(nu) * Math.sin(phi);
-  //var y = radius * Math.cos(nu) * Math.cos(theta) * Math.sin(phi) + radius * Math.sin(nu) * Math.cos(phi);
   var Omega = Omega_deg[planet] * Math.PI / 180;
   var omega = omega_deg[planet] * Math.PI / 180;
   var asc_n = [Math.cos(Omega), Math.sin(Omega), 0];
@@ -295,9 +267,6 @@ function displayOrbit(planet) {
   }
   for (nu = Math.PI / 180; nu < 2 * Math.PI; nu = nu + Math.PI / 180) {
     radius = a * (1 - Math.pow(eccentricity[planet],2)) / (1 + sign * eccentricity[planet] * Math.cos(nu));
-    //z = radius * Math.cos(nu) * Math.sin(theta);
-    //x = radius * Math.cos(nu) * Math.cos(theta) * Math.cos(phi) - radius * Math.sin(nu) * Math.sin(phi);
-    //y = radius * Math.cos(nu) * Math.cos(theta) * Math.sin(phi) + radius * Math.sin(nu) * Math.cos(phi);
     var summand_1 = scalar_product(radius * Math.cos(nu), x_n);  
     var summand_2 = scalar_product(radius * Math.sin(nu), y_n);
     var ret_val = vector_sum(summand_1, summand_2);
@@ -422,10 +391,6 @@ function Neptune(theta7, r) {
   ctx.fill();
 }
 
-// Note: The outer planets move more smoothly than in the Quby version!
-// Also, the canvas takes up most of the screen now...
-// Make a print-out of this code before Calendula goes kaput.
-
 function keyFunction(event, the) {
   var x = event.which || event.keyCode;
   //alert(x);
@@ -500,6 +465,9 @@ function keyFunction(event, the) {
   } else if (x == 56) {
     // 8
     orbitcolor = 8
+  } else if (x = 114) {
+    // (r)eset
+    when = first_when
   }
   
   the.value = "";
