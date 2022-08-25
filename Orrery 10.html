@@ -180,24 +180,13 @@ function heliocentric_XYZ(planet, when_JDN) {
   var guess_E = M;
   var keplr = document.getElementById("kepler");
   var keplr2 = document.getElementById("kepler2");
-  //if (planet == 2) {
-  //  keplr.innerHTML = guess_E.toString();
-  //  keplr2.innerHTML = "";
-  //}
   var error = Math.abs((guess_E - (eccentricity[planet] * Math.sin(guess_E))) - M);
   while (error >= epsilon) {
     f_of_x = guess_E - eccentricity[planet]*Math.sin(guess_E) - M;
     f_prime_of_x = 1 - eccentricity[planet]*Math.cos(guess_E);
     Delta_x = -f_of_x / f_prime_of_x;
     guess_E = guess_E + Delta_x;
-    //if (planet == 2) {
-    //  keplr.innerHTML = keplr.innerHTML + "\n " + guess_E.toString();
-    //}
     error = Math.abs((guess_E - (eccentricity[planet] * Math.sin(guess_E))) - M);   
-    //if (planet == 2) {
-    //  keplr.innerHTML = keplr.innerHTML + "\n " + error.toString();
-    //  keplr2.innerHTML = keplr2.innerHTML + " ecc = " + eccentricity[planet] + " guess_E = " + guess_E + " sin(guess_E) = " + Math.sin(guess_E) + " ecc * sin(guess_E) = " + eccentricity[planet] * Math.sin(guess_E);
-    //}
   }
   var E = guess_E;
   // nu = 2 arg(sqrt(1 - e) cos(E/2), sqrt(1 + e) sin(E/2))
@@ -205,21 +194,16 @@ function heliocentric_XYZ(planet, when_JDN) {
   // r(nu) = a(1 - e^2) / (1 + e cos nu)
   sign = 1
   var radius = a * (1 - Math.pow(eccentricity[planet],2)) / (1 + sign * eccentricity[planet] * Math.cos(nu));
-  //// z = r cos(nu) sin(theta)
   var theta = inclination[planet] * Math.PI / 180;
-  //// x = r cos(nu) cos(theta) cos(phi) - r sin(nu) sin(phi)
-  //// y = r cos(nu) cos(theta) sin(phi) + r sin(nu) cos(phi)
   
   // Have radius, nu, & theta.
   // Longitude of the ascending node given as Omega_deg.
   // Argument of perihelion given as omega_deg.
   var Omega = Omega_deg[planet] * Math.PI / 180;
   var omega = omega_deg[planet] * Math.PI / 180;
-  //alert("Omega = " + Omega + ", omega = " + omega);
   var asc_n = [Math.cos(Omega), Math.sin(Omega), 0];
   var n = [0,0,1];
   var z_n = Rodrigues_rotation(n, asc_n, theta);
-  //alert("z_n = " + z_n);
   var x_n = asc_n;
   var y_n = cross_product(z_n, x_n);
   x_n = Rodrigues_rotation(x_n, z_n, omega);
@@ -227,10 +211,8 @@ function heliocentric_XYZ(planet, when_JDN) {
   var summand_1 = scalar_product(radius * Math.cos(nu), x_n);  
   var summand_2 = scalar_product(radius * Math.sin(nu), y_n);
   var ret_val = vector_sum(summand_1, summand_2);
-  //alert("Planet " + planet + ", ret_val = " + ret_val);
   ret_val = Rodrigues_rotation(ret_val, [1,0,0], view_angle);
   return ret_val;
-  //return [x, y, z];
 }
 
 function displayOrbit(planet) {
