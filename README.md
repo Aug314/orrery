@@ -19,6 +19,7 @@ T : Toggle trace mode. (Trace mode requires the screen to be black, and it works
 V : Toggle "vibe mode" on/off. (Vibe mode to cycle the color of the orbits sinusoidally between white and their assigned color.)<br>
 U : Increase rate of the red/white orbit color cycling.<br>
 D : Decrease rate of the red/white orbit color cycling.<br>
+R : Reset the day-count.<br>
 
 
 Besides showing the eight planets as well as Pluto, it also shows Ceres, Chiron, and Eris. Each planet (or dwarf planet or planetoid) is represented by a disk with a uniform color.
